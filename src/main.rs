@@ -37,6 +37,22 @@ enum Type {
     #[cfg(feature = "foot")]
     Foot
 }
+impl Type {
+    pub fn extension(&self) -> String {
+        use Type::*;
+
+        match self {
+            #[cfg(feature = "alacritty")]
+            Alacritty => String::from("toml"),
+    
+            #[cfg(feature = "kitty")]
+            Kitty => String::from("conf"),
+    
+            #[cfg(feature = "foot")]
+            Foot => String::from("ini"),
+        }
+    }
+}
 
 
 fn main() -> std::io::Result<()> {
@@ -45,8 +61,8 @@ fn main() -> std::io::Result<()> {
         return Err(std::io::Error::new(std::io::ErrorKind::NotFound, "Input is not exists!"));
     }
 
-    let input_extension = get_file_extension(args.input_type);
-    let output_extension = get_file_extension(args.output_type);
+    let input_extension = args.input_type.extension();
+    let output_extension = args.output_type.extension();
 
     if args.input.is_file() {
         convert_theme(
@@ -132,19 +148,3 @@ fn convert_theme(
 
     Ok(())
 }
-fn get_file_extension(t: Type) -> String {
-    use Type::*;
-
-
-    match t {
-        #[cfg(feature = "alacritty")]
-        Alacritty => String::from("toml"),
-
-        #[cfg(feature = "kitty")]
-        Kitty => String::from("conf"),
-
-        #[cfg(feature = "foot")]
-        Foot => String::from("ini"),
-    }
-}
-
