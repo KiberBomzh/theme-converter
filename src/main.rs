@@ -55,25 +55,37 @@ impl Type {
 }
 
 
-fn main() -> std::io::Result<()> {
+fn main() {
     let args = Args::parse();
     if !args.input.exists() {
-        return Err(std::io::Error::new(std::io::ErrorKind::NotFound, "Input is not exists!"));
+        eprintln!("Input is not exists!");
+        std::process::exit(1);
     }
 
     let input_extension = args.input_type.extension();
     let output_extension = args.output_type.extension();
 
     if args.input.is_file() {
-        convert_theme(
+        if let Err(err) = convert_theme(
             &args.input,
             &args.output,
             args.input_type,
             args.output_type,
-        )?;
+        ) {
+            eprintln!("{}", err);
+            std::process::exit(1);
+        }
     } else if args.input.is_dir() {
-        for entry in fs::read_dir(args.input)? {
-            let path = entry?.path();
+        let entries = match fs::read_dir(args.input) {
+            Ok(entries) => entries,
+            Err(err) => {
+                eprintln!("{}", err);
+                std::process::exit(1);
+            }
+        };
+        for entry in entries {
+            let path = if let Ok(e) = entry { e.path() }
+                else { continue };
             if path.is_dir() { continue }
 
 
@@ -90,14 +102,11 @@ fn main() -> std::io::Result<()> {
                 args.input_type,
                 args.output_type,
             ) {
-                println!("Error in file {}", file_stem);
-                println!("{:#?}\n", err);
+                eprintln!("Error in file {}", file_stem);
+                eprintln!("{}\n", err);
             }
         }
     }
-
-
-    Ok(())
 }
 fn convert_theme(
     input: &Path,
