@@ -1,62 +1,22 @@
 mod theme;
+mod cli;
 
-use std::path::{PathBuf, Path};
+
+use std::path::Path;
 use std::fs;
 
-use clap::{Parser, ValueEnum};
-
 use theme::Theme;
-
-
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-struct Args {
-    /// Input file
-    input: PathBuf,
-
-    /// Output path
-    output: PathBuf,
-
-    /// Type of the input file
-    #[arg(short, long, required = true)]
-    input_type: Type,
-
-    /// Type of the output file
-    #[arg(short, long, required = true)]
-    output_type: Type,
-}
-
-#[derive(ValueEnum, Clone, Copy, Debug)]
-enum Type {
-    #[cfg(feature = "alacritty")]
-    Alacritty,
-
-    #[cfg(feature = "kitty")]
-    Kitty,
-
-    #[cfg(feature = "foot")]
-    Foot
-}
-impl Type {
-    pub fn extension(&self) -> String {
-        use Type::*;
-
-        match self {
-            #[cfg(feature = "alacritty")]
-            Alacritty => String::from("toml"),
-    
-            #[cfg(feature = "kitty")]
-            Kitty => String::from("conf"),
-    
-            #[cfg(feature = "foot")]
-            Foot => String::from("ini"),
-        }
-    }
-}
+use cli::{Args, Type};
 
 
 fn main() {
-    let args = Args::parse();
+    let args = match Args::parse() {
+        Ok(a) => a,
+        Err(err) => {
+            eprintln!("{}", err);
+            std::process::exit(1);
+        },
+    };
     if !args.input.exists() {
         eprintln!("Input is not exists!");
         std::process::exit(1);
