@@ -28,8 +28,13 @@ struct Args {
 
 #[derive(ValueEnum, Clone, Copy, Debug)]
 enum Type {
-    Kitty,
+    #[cfg(feature = "alacritty")]
     Alacritty,
+
+    #[cfg(feature = "kitty")]
+    Kitty,
+
+    #[cfg(feature = "foot")]
     Foot
 }
 
@@ -87,11 +92,16 @@ fn convert_theme(
     use std::io::Write;
 
 
-    let theme = match input_type {
+    let theme: Theme = match input_type {
+        #[cfg(feature = "alacritty")]
         Type::Alacritty =>
             Theme::from_alacritty(input)?,
+
+        #[cfg(feature = "kitty")]
         Type::Kitty =>
             Theme::from_kitty(input)?,
+
+        #[cfg(feature = "foot")]
         Type::Foot =>
             Theme::from_foot(input)?,
     };
@@ -99,11 +109,16 @@ fn convert_theme(
         return Err(std::io::Error::other("Theme is empty!"));
     }
 
-    let content = match output_type {
+    let content: String = match output_type {
+        #[cfg(feature = "alacritty")]
         Type::Alacritty => 
             theme.to_alacritty(),
+
+        #[cfg(feature = "kitty")]
         Type::Kitty =>
             theme.to_kitty(),
+
+        #[cfg(feature = "foot")]
         Type::Foot =>
             theme.to_foot(),
     };
@@ -122,8 +137,13 @@ fn get_file_extension(t: Type) -> String {
 
 
     match t {
+        #[cfg(feature = "alacritty")]
         Alacritty => String::from("toml"),
+
+        #[cfg(feature = "kitty")]
         Kitty => String::from("conf"),
+
+        #[cfg(feature = "foot")]
         Foot => String::from("ini"),
     }
 }

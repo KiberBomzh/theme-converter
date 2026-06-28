@@ -1,5 +1,10 @@
+#[cfg(feature = "alacritty")]
 mod alacritty;
+
+#[cfg(feature = "kitty")]
 mod kitty;
+
+#[cfg(feature = "foot")]
 mod foot;
 
 
