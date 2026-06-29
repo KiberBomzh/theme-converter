@@ -39,11 +39,11 @@ fn main() {
 
     if args.input.is_file() {
         if let Err(err) = read_and_write_theme(
-                &args.input,
-                &args.output,
-                args.input_type,
-                args.output_type,
-            ) {
+            &args.input,
+            &args.output,
+            args.input_type,
+            args.output_type,
+        ) {
             eprintln!("{}", err);
             std::process::exit(1);
         }
