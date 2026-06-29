@@ -4,6 +4,8 @@ mod cli;
 
 use std::path::Path;
 use std::fs;
+use std::io::{self, Result, Read, Write};
+
 
 use theme::Theme;
 use cli::{Args, Type};
@@ -17,6 +19,16 @@ fn main() {
             std::process::exit(1);
         },
     };
+
+    if args.pipe {
+        if let Err(err) = handle_pipe(args.input_type, args.output_type) {
+            eprintln!("{}", err);
+            std::process::exit(1);
+        }
+        std::process::exit(0);
+    }
+
+
     if !args.input.exists() {
         eprintln!("Input is not exists!");
         std::process::exit(1);
@@ -26,12 +38,12 @@ fn main() {
     let output_extension = args.output_type.extension();
 
     if args.input.is_file() {
-        if let Err(err) = convert_theme(
-            &args.input,
-            &args.output,
-            args.input_type,
-            args.output_type,
-        ) {
+        if let Err(err) = read_and_write_theme(
+                &args.input,
+                &args.output,
+                args.input_type,
+                args.output_type,
+            ) {
             eprintln!("{}", err);
             std::process::exit(1);
         }
@@ -56,7 +68,7 @@ fn main() {
                 else { continue };
 
 
-            if let Err(err) = convert_theme(
+            if let Err(err) = read_and_write_theme(
                 &path,
                 &args.output.join(format!("{file_stem}.{output_extension}")),
                 args.input_type,
@@ -68,15 +80,38 @@ fn main() {
         }
     }
 }
-fn convert_theme(
+fn read_and_write_theme(
     input: &Path,
     output: &Path,
     input_type: Type,
     output_type: Type,
-) -> std::io::Result<()> {
-    use std::io::Write;
+) -> Result<()> {
+    let content = read_theme(input)?;
+    let new_theme = convert_theme(&content, input_type, output_type)?;
+    write_theme(&new_theme, output)?;
 
 
+    Ok(())
+}
+fn handle_pipe(input_type: Type, output_type: Type) -> Result<()> {
+    let mut stdin = io::stdin();
+    let mut stdout = io::stdout();
+    let mut input = String::new();
+    stdin.read_to_string(&mut input)?;
+
+    let new_theme = convert_theme(&input, input_type, output_type)?;
+    write!(&mut stdout, "{}", new_theme)?;
+
+
+    Ok(())
+}
+
+
+fn convert_theme(
+    input: &str,
+    input_type: Type,
+    output_type: Type,
+) -> Result<String> {
     let theme: Theme = match input_type {
         #[cfg(feature = "alacritty")]
         Type::Alacritty =>
@@ -94,7 +129,8 @@ fn convert_theme(
         return Err(std::io::Error::other("Theme is empty!"));
     }
 
-    let content: String = match output_type {
+
+    Ok(match output_type {
         #[cfg(feature = "alacritty")]
         Type::Alacritty => 
             theme.to_alacritty(),
@@ -106,7 +142,9 @@ fn convert_theme(
         #[cfg(feature = "foot")]
         Type::Foot =>
             theme.to_foot(),
-    };
+    })
+}
+fn write_theme(content: &str, output: &Path) -> Result<()> {
     if let Some(parent) = output.parent() && !parent.exists() {
         fs::create_dir_all(parent)?;
     }
@@ -116,4 +154,12 @@ fn convert_theme(
 
 
     Ok(())
+}
+fn read_theme(path: &Path) -> Result<String>{
+    let mut file = fs::File::open(path)?;
+    let mut content = String::new();
+    file.read_to_string(&mut content)?;
+
+
+    Ok(content)
 }

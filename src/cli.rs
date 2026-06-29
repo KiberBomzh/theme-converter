@@ -7,6 +7,7 @@ pub struct Args {
     pub output: PathBuf,
     pub input_type: Type,
     pub output_type: Type,
+    pub pipe: bool,
 }
 impl Args {
     pub fn parse() -> Result<Self, lexopt::Error> {
@@ -16,6 +17,7 @@ impl Args {
         let mut output: Option<PathBuf> = None;
         let mut i_type: Option<Type> = None;
         let mut o_type: Option<Type> = None;
+        let mut pipe: bool = false;
 
         let mut parser = lexopt::Parser::from_env();
         while let Some(arg) = parser.next()? {
@@ -31,6 +33,7 @@ Arguments:
 Options:
   -i, --input-type <INPUT_TYPE>    Type of the input file [possible values: {types}]
   -o, --output-type <OUTPUT_TYPE>  Type of the output file [possible values: {types}]
+  -p, --pipe                       Read input from stdin, write output in stdout
   -h, --help                       Print help"#);
                     std::process::exit(0);
                 },
@@ -48,6 +51,8 @@ Options:
                         Err(err) => return Err(lexopt::Error::Custom(err.into()))
                     }
                 },
+                Short('p') | Long("pipe") => 
+                    pipe = true,
                 Value(val) if input.is_none() =>
                     input = Some(PathBuf::from(val.string()?)),
                 Value(val) if output.is_none() =>
@@ -57,11 +62,23 @@ Options:
         }
 
 
+        if pipe {
+            return Ok(Self {
+                input: PathBuf::new(),
+                output: PathBuf::new(),
+                input_type: i_type.ok_or("Missing argument: INPUT_TYPE")?,
+                output_type: o_type.ok_or("Missing argument: OUTPUT_TYPE")?,
+                pipe,
+            });
+        }
+
+
         Ok(Self {
             input: input.ok_or("Missing argument: INPUT")?,
             output: output.ok_or("Missing argument: OUTPUT")?,
             input_type: i_type.ok_or("Missing argument: INPUT_TYPE")?,
             output_type: o_type.ok_or("Missing argument: OUTPUT_TYPE")?,
+            pipe,
         })
     }
 }

@@ -1,17 +1,5 @@
-use std::fs;
-use std::path::Path;
-use std::io::Result;
-
-
 impl super::Theme {
-    pub fn from_alacritty(file: &Path) -> Result<Self> {
-        use std::io::Read;
-
-
-        let mut file = fs::File::open(file)?;
-        let mut content = String::new();
-        file.read_to_string(&mut content)?;
-
+    pub fn from_alacritty(content: &str) -> std::io::Result<Self> {
         let mut background = None;
         let mut foreground = None;
         let mut cursor = None;
