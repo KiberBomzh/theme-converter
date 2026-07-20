@@ -93,7 +93,10 @@ pub enum Type {
     Kitty,
 
     #[cfg(feature = "foot")]
-    Foot
+    Foot,
+
+    #[cfg(feature = "termux")]
+    Termux,
 }
 impl Type {
     pub fn extension(&self) -> String {
@@ -108,6 +111,9 @@ impl Type {
     
             #[cfg(feature = "foot")]
             Foot => String::from("ini"),
+
+            #[cfg(feature = "termux")]
+            Termux => String::from("properties")
         }
     }
 
@@ -125,6 +131,9 @@ impl Type {
         #[cfg(feature = "foot")]
         types.push("foot");
 
+        #[cfg(feature = "termux")]
+        types.push("termux");
+
 
         types.join(", ")
     }
@@ -141,6 +150,9 @@ impl FromStr for Type {
 
             #[cfg(feature = "foot")]
             "foot" => Ok(Self::Foot),
+
+            #[cfg(feature = "termux")]
+            "termux" => Ok(Self::Termux),
 
 
             _ => Err(format!("There's no such Type: {s}. Allowed: [{}]", Type::get_all_as_string())),

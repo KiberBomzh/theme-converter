@@ -7,6 +7,9 @@ mod kitty;
 #[cfg(feature = "foot")]
 mod foot;
 
+#[cfg(feature = "termux")]
+mod termux;
+
 
 
 #[derive(Debug)]

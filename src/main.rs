@@ -124,6 +124,10 @@ fn convert_theme(
         #[cfg(feature = "foot")]
         Type::Foot =>
             Theme::from_foot(input)?,
+
+        #[cfg(feature = "termux")]
+        Type::Termux =>
+            Theme::from_termux(input)?,
     };
     if !theme.is_some() {
         return Err(std::io::Error::other("Theme is empty!"));
@@ -142,6 +146,10 @@ fn convert_theme(
         #[cfg(feature = "foot")]
         Type::Foot =>
             theme.to_foot(),
+
+        #[cfg(feature = "termux")]
+        Type::Termux =>
+            theme.to_termux(),
     })
 }
 fn write_theme(content: &str, output: &Path) -> Result<()> {
