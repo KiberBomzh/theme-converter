@@ -86,7 +86,7 @@ impl super::Theme {
 
 
     pub fn to_foot(&self) -> String {
-        let mut s = "[colors]\n".to_string();
+        let mut s = "[colors-dark]\n".to_string();
 
         Self::push_to_string_foot(&mut s, &self.background, "background");
         Self::push_to_string_foot(&mut s, &self.foreground, "foreground");
