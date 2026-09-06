@@ -100,20 +100,18 @@ pub enum Type {
 }
 impl Type {
     pub fn extension(&self) -> String {
-        use Type::*;
-
         match self {
             #[cfg(feature = "alacritty")]
-            Alacritty => String::from("toml"),
+            Type::Alacritty => String::from("toml"),
     
             #[cfg(feature = "kitty")]
-            Kitty => String::from("conf"),
+            Type::Kitty => String::from("conf"),
     
             #[cfg(feature = "foot")]
-            Foot => String::from("ini"),
+            Type::Foot => String::from("ini"),
 
             #[cfg(feature = "termux")]
-            Termux => String::from("properties")
+            Type::Termux => String::from("properties")
         }
     }
 
